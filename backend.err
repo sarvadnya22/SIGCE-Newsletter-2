@@ -1,0 +1,15 @@
+<anonymous_script>:2
+{"t":{"$date":"2026-04-04T19:48:02.174+05:30"},"s":"I",  "c":"CONTROL",  "id":97374,   "ctx":"thread1","msg":"Automatically disabling TLS 1.0 and TLS 1.1, to force-enable TLS 1.1 specify --sslDisabledProtocols 'TLS1_0'; to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'"}
+^
+
+SyntaxError: Unexpected non-whitespace character after JSON at position 163 (line 2 column 1)
+    at JSON.parse (<anonymous>)
+    at MongoInstance.checkErrorInLine (C:\Users\sarva\OneDrive\Desktop\newsletter\backend\node_modules\mongodb-memory-server-core\lib\util\MongoInstance.js:398:41)
+    at MongoInstance.stdoutHandler (C:\Users\sarva\OneDrive\Desktop\newsletter\backend\node_modules\mongodb-memory-server-core\lib\util\MongoInstance.js:365:14)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+
+Node.js v24.14.0

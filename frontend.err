@@ -1,0 +1,8 @@
+[33m[vite:css][postcss] @import must precede all other statements (besides @charset or empty @layer)
+1974 |    }
+1975 |  }
+1976 |  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display...
+     |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1977 |  body {
+1978 |    margin: 0;[39m
+^C
