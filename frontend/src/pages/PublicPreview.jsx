@@ -12,6 +12,10 @@ export default function PublicPreview() {
       try {
         const res = await axios.get(`http://127.0.0.1:5000/api/newsletters/${id}`);
         setData(res.data);
+        // Track the view count
+        axios.post(`http://127.0.0.1:5000/api/newsletters/${id}/view`).catch(err => {
+          console.error('Failed to track view count:', err);
+        });
       } catch (err) {
         console.error(err);
       }
@@ -57,8 +61,30 @@ export default function PublicPreview() {
   const hasPage3 = data && (data.peos?.length > 0 || data.psos?.length > 0 || data.hodMessage || data.principalMessage);
   const baseEventPageNum = (hasPage3 ? 4 : 3) + (data?.customSections?.length || 0);
 
+  const themeColors = {
+    blue: { primary: '#1e3a8a', accent: '#facc15' },
+    red: { primary: '#991b1b', accent: '#f59e0b' },
+    green: { primary: '#065f46', accent: '#10b981' },
+    dark: { primary: '#1e293b', accent: '#facc15' },
+    purple: { primary: '#5b21b6', accent: '#c084fc' },
+    teal: { primary: '#0f766e', accent: '#2dd4bf' },
+    amber: { primary: '#b45309', accent: '#fbbf24' },
+    navy: { primary: '#0f172a', accent: '#38bdf8' }
+  };
+
+  const currentTheme = themeColors[data?.theme || 'blue'] || themeColors.blue;
+
   return (
-    <div className="bg-white min-h-screen text-gray-900 font-sans mx-auto shadow-2xl overflow-hidden print:shadow-none print:m-0 print:p-0 wrapper" style={{ width: '210mm' }}>
+    <div 
+      className="bg-white min-h-screen text-gray-900 font-sans mx-auto shadow-2xl overflow-hidden print:shadow-none print:m-0 print:p-0 wrapper" 
+      style={{ 
+        width: '210mm',
+        '--color-sigceBlue': currentTheme.primary,
+        '--color-sigce-blue': currentTheme.primary,
+        '--color-sigceYellow': currentTheme.accent,
+        '--color-sigce-yellow': currentTheme.accent
+      }}
+    >
       
       {/* Page 1: Premium Cover */}
       <div className="relative w-[210mm] min-h-[297mm] bg-white flex flex-col page">

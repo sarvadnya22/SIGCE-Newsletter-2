@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   PlusCircle, FileText, Download, LogOut, Eye, Trash2,
-  Search, Activity, Award, Newspaper, Sparkles, ChevronRight
+  Search, Activity, Award, Newspaper, Sparkles, ChevronRight, Share2, Send
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -13,6 +13,15 @@ export default function Dashboard() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [newsletterToDelete, setNewsletterToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Email Share Modal States
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [newsletterToShare, setNewsletterToShare] = useState(null);
+  const [recipients, setRecipients] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+
   const navigate = useNavigate();
   const username = localStorage.getItem('username') || 'Admin';
 
@@ -89,8 +98,44 @@ export default function Dashboard() {
     }
   };
 
+  const openShareModal = (nl) => {
+    setNewsletterToShare(nl);
+    setEmailSubject(`SIGCE Newsletter: ${nl.title}`);
+    setEmailMessage(`Hello,\n\nPlease find the latest ${nl.department} newsletter details for "${nl.title}" (${nl.semester}) published online.\n\nClick the link to read online or download.`);
+    setRecipients('');
+    setShareModalOpen(true);
+  };
+
+  const executeShare = async (e) => {
+    e.preventDefault();
+    if (!recipients.trim()) {
+      toast.error('Recipient email(s) are required');
+      return;
+    }
+    setSendingEmail(true);
+    const toastId = toast.loading('Sending email...');
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`http://127.0.0.1:5000/api/newsletters/${newsletterToShare.id}/email`, {
+        recipients,
+        subject: emailSubject,
+        message: emailMessage
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Email shared successfully!', { id: toastId });
+      setShareModalOpen(false);
+    } catch (error) {
+      toast.error('Failed to send email: ' + (error.response?.data?.message || 'Error occurred'), { id: toastId });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const totalEvents = newsletters.reduce((a, b) => a + (b.events?.length || 0), 0);
   const totalToppers = newsletters.reduce((a, b) => a + (b.toppers?.length || 0), 0);
+  const totalViews = newsletters.reduce((a, b) => a + (b.views || 0), 0);
+  const totalDownloads = newsletters.reduce((a, b) => a + (b.downloads || 0), 0);
 
   return (
     <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg, #e8eeff 0%, #f0f4ff 50%, #eef2ff 100%)' }}>
@@ -180,7 +225,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ── Stats Cards ── */}
           {!loading && newsletters.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
               {[
@@ -255,11 +299,30 @@ export default function Dashboard() {
               {filteredNewsletters.map((nl, idx) => {
                 const allImages = nl.events?.flatMap(e => e.images || []) || [];
                 const coverImage = allImages[0] || 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                
+                const themeColors = {
+                  blue: { primary: '#1e3a8a', accent: '#facc15' },
+                  red: { primary: '#991b1b', accent: '#f59e0b' },
+                  green: { primary: '#065f46', accent: '#10b981' },
+                  dark: { primary: '#1e293b', accent: '#facc15' },
+                  purple: { primary: '#5b21b6', accent: '#c084fc' },
+                  teal: { primary: '#0f766e', accent: '#2dd4bf' },
+                  amber: { primary: '#b45309', accent: '#fbbf24' },
+                  navy: { primary: '#0f172a', accent: '#38bdf8' }
+                };
+                const currentTheme = themeColors[nl.theme || 'blue'] || themeColors.blue;
+
                 return (
                   <div
                     key={nl.id}
                     className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:shadow-blue-900/10 hover:-translate-y-2 transition-all duration-300 flex flex-col"
-                    style={{ animationDelay: `${idx * 0.05}s` }}
+                    style={{
+                      animationDelay: `${idx * 0.05}s`,
+                      '--color-sigceBlue': currentTheme.primary,
+                      '--color-sigce-blue': currentTheme.primary,
+                      '--color-sigceYellow': currentTheme.accent,
+                      '--color-sigce-yellow': currentTheme.accent
+                    }}
                   >
                     {/* Cover Image */}
                     <div className="relative h-48 overflow-hidden">
@@ -270,7 +333,13 @@ export default function Dashboard() {
                       <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-green-500/90 text-white text-[9px] font-black tracking-widest px-2.5 py-1 rounded-full backdrop-blur-sm shadow">
                         <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse inline-block"></span> LIVE
                       </div>
-                      <div className="absolute bottom-3 left-3 text-white text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 uppercase tracking-wider">{nl.semester}</div>
+                       
+                       {/* Analytics Overlay Badge */}
+                       <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/40 text-white text-[9px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm shadow border border-white/10">
+                         <Eye size={10} className="mr-0.5" /> {nl.views || 0} | <Download size={10} className="mx-0.5" /> {nl.downloads || 0}
+                       </div>
+
+                       <div className="absolute bottom-3 left-3 text-white text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 uppercase tracking-wider">{nl.semester}</div>
                     </div>
 
                     {/* Body */}
@@ -282,20 +351,23 @@ export default function Dashboard() {
                         <span className="flex items-center gap-1"><FileText size={12} /> {nl.events?.length || 0} events</span>
                         <span className="flex items-center gap-1"><Award size={12} /> {nl.toppers?.length || 0} toppers</span>
                       </div>
-
-                      {/* Actions */}
-                      <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <Link to={`/edit/${nl.id}`} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-600 hover:text-sigceBlue hover:bg-blue-50 transition-all">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg> Edit
-                          </Link>
-                          <Link to={`/public-preview/${nl.id}`} target="_blank" className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-600 hover:text-sigceBlue hover:bg-blue-50 transition-all">
-                            <Eye size={13} /> Preview
-                          </Link>
-                          <button onClick={e => confirmDelete(e, nl)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
+ 
+                       {/* Actions */}
+                       <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                         <div className="flex items-center gap-1">
+                           <Link to={`/edit/${nl.id}`} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-600 hover:text-sigceBlue hover:bg-blue-50 transition-all">
+                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4z"/></svg> Edit
+                           </Link>
+                           <Link to={`/public-preview/${nl.id}`} target="_blank" className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-600 hover:text-sigceBlue hover:bg-blue-50 transition-all">
+                             <Eye size={13} /> Preview
+                           </Link>
+                           <button onClick={() => openShareModal(nl)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all">
+                             <Share2 size={13} /> Share
+                           </button>
+                           <button onClick={e => confirmDelete(e, nl)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                             <Trash2 size={13} />
+                           </button>
+                         </div>
                         <button onClick={() => handleDownloadPdf(nl.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-sigceBlue bg-blue-50 hover:bg-sigceBlue hover:text-white transition-all shadow-sm">
                           <Download size={13} /> PDF
                         </button>
@@ -324,6 +396,77 @@ export default function Dashboard() {
               <button onClick={() => setDeleteModalOpen(false)} className="flex-1 btn-secondary py-3 font-bold text-sm">Cancel</button>
               <button onClick={executeDelete} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all py-3 text-sm shadow-lg shadow-red-500/20">Delete Forever</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Share Modal ─────────────────────────────────── */}
+      {shareModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 animate-float-up relative">
+            <button 
+              onClick={() => setShareModalOpen(false)} 
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 text-xl font-bold focus:outline-none"
+            >
+              &times;
+            </button>
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+              <Send size={24} />
+            </div>
+            <h3 className="text-2xl font-black text-gray-900 mb-1 font-serif">Share Newsletter</h3>
+            <p className="text-gray-400 text-sm mb-6">Send an online preview link of <strong className="text-gray-700">"{newsletterToShare?.title}"</strong> via email.</p>
+            
+            <form onSubmit={executeShare} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Recipient Emails (comma-separated)</label>
+                <input 
+                  type="text" 
+                  className="input-field py-2.5" 
+                  placeholder="e.g. principal@sigce.edu, hod.comp@sigce.edu" 
+                  value={recipients}
+                  onChange={e => setRecipients(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Subject</label>
+                <input 
+                  type="text" 
+                  className="input-field py-2.5" 
+                  value={emailSubject}
+                  onChange={e => setEmailSubject(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Custom Message</label>
+                <textarea 
+                  className="input-field py-2.5 h-28 resize-none" 
+                  value={emailMessage}
+                  onChange={e => setEmailMessage(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setShareModalOpen(false)} 
+                  className="flex-1 btn-secondary py-3 font-bold text-sm"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={sendingEmail} 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all py-3 text-sm shadow-lg shadow-blue-500/20 disabled:bg-blue-400"
+                >
+                  {sendingEmail ? 'Sending...' : 'Send Email'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

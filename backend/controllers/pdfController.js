@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const Newsletter = require('../models/Newsletter');
 
 exports.generatePdf = async (req, res) => {
   let browser;
@@ -55,6 +56,11 @@ exports.generatePdf = async (req, res) => {
     });
 
     await browser.close();
+
+    // Increment downloads analytics counter (run asynchronously in the background)
+    Newsletter.increment('downloads', { where: { id: newsletterId } }).catch(err => {
+      console.error('[PDF] Error incrementing downloads:', err.message);
+    });
 
     res.set({
       'Content-Type': 'application/pdf',

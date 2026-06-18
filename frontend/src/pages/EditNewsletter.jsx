@@ -21,7 +21,8 @@ export default function EditNewsletter() {
     headerImage: '',
     toppers: [],
     events: [],
-    customSections: []
+    customSections: [],
+    theme: 'blue'
   });
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function EditNewsletter() {
             date: e.date ? e.date.split('T')[0] : ''
           }));
         }
+        data.theme = data.theme || 'blue';
         setFormData(data);
       } catch (err) {
         console.error('Error fetching data', err);
@@ -127,6 +129,33 @@ export default function EditNewsletter() {
                 }} />
               </div>
               <p className="text-xs text-gray-500 font-medium">This banner will automatically be displayed beautifully at the top of every page in the PDF.</p>
+            </div>
+          </div>
+
+          {/* Theme Selector */}
+          <div className="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <label className="block text-sm font-bold mb-2 text-sigceBlue">Accent Color Theme</label>
+            <div className="flex flex-wrap items-center gap-3">
+              {[
+                { id: 'blue', name: 'SIGCE Blue', color: 'bg-[#1e3a8a]' },
+                { id: 'red', name: 'Crimson Red', color: 'bg-[#991b1b]' },
+                { id: 'green', name: 'Forest Green', color: 'bg-[#065f46]' },
+                { id: 'dark', name: 'Charcoal Dark', color: 'bg-[#1e293b]' },
+                { id: 'purple', name: 'Royal Purple', color: 'bg-[#5b21b6]' },
+                { id: 'teal', name: 'Ocean Teal', color: 'bg-[#0f766e]' },
+                { id: 'amber', name: 'Warm Amber', color: 'bg-[#b45309]' },
+                { id: 'navy', name: 'Midnight Navy', color: 'bg-[#0f172a]' }
+              ].map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, theme: t.id })}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all font-semibold text-xs cursor-pointer ${formData.theme === t.id ? 'border-sigceBlue bg-white shadow-sm scale-105' : 'border-transparent bg-white/50 hover:bg-white text-gray-500'}`}
+                >
+                  <span className={`w-3.5 h-3.5 rounded-full ${t.color} border border-black/10 inline-block`}></span>
+                  {t.name}
+                </button>
+              ))}
             </div>
           </div>
 

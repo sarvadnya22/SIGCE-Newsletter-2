@@ -46,7 +46,7 @@ const connectDB = async () => {
     require('./models/Newsletter');
     
     // Sync models to the database (creates tables if they don't exist)
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log('Database synchronized.');
   } catch (err) {
     console.error('Unable to connect to the database:', err);

@@ -14,7 +14,10 @@ const Newsletter = sequelize.define('Newsletter', {
   headerImage: { type: DataTypes.STRING },
   toppers: { type: DataTypes.JSON }, // Array of objects
   events: { type: DataTypes.JSON },  // Array of objects
-  customSections: { type: DataTypes.JSON } // Array of objects
+  customSections: { type: DataTypes.JSON }, // Array of objects
+  views: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
+  downloads: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
+  theme: { type: DataTypes.STRING, defaultValue: 'blue', allowNull: false }
 }, {
   timestamps: true
 });

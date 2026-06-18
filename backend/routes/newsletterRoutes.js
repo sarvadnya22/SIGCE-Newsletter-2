@@ -12,4 +12,7 @@ router.route('/:id')
   .put(authMiddleware, newsletterController.updateNewsletter)
   .delete(authMiddleware, newsletterController.deleteNewsletter);
 
+router.post('/:id/view', newsletterController.trackView);
+router.post('/:id/email', authMiddleware, newsletterController.emailNewsletter);
+
 module.exports = router;
