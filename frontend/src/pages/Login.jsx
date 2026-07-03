@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Newspaper, BookOpen, ArrowRight, CheckCircle } from 'lucide-react';
+import { Newspaper, BookOpen, ArrowRight, CheckCircle, User } from 'lucide-react';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -22,6 +22,26 @@ export default function Login() {
         setError('Network Error: Could not connect to backend server. Ensure backend is running.');
       } else {
         setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+      }
+      setLoading(false);
+    }
+  };
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.post('http://127.0.0.1:5000/api/auth/login', {
+        username: 'admin',
+        password: 'admin123'
+      });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('username', 'Demo Guest');
+      window.location.href = '/dashboard';
+    } catch (err) {
+      if (!err.response) {
+        setError('Network Error: Could not connect to backend server. Ensure backend is running.');
+      } else {
+        setError('Failed to establish guest session. Check database config.');
       }
       setLoading(false);
     }
@@ -134,7 +154,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 text-white font-black rounded-2xl text-base flex items-center justify-center gap-3 group disabled:opacity-70 transition-all shadow-xl shadow-blue-900/25"
+              className="w-full py-4 text-white font-black rounded-2xl text-base flex items-center justify-center gap-3 group disabled:opacity-70 transition-all shadow-xl shadow-blue-900/25 animate-pulse"
               style={{ background: 'linear-gradient(135deg,#1e3a8a,#4f46e5)', backgroundSize: '200% 200%' }}
             >
               {loading ? (
@@ -142,6 +162,21 @@ export default function Login() {
               ) : (
                 <>Sign in to Dashboard <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>
               )}
+            </button>
+
+            <div className="flex items-center gap-3 my-4">
+              <div className="h-px bg-gray-200 flex-1"></div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or</span>
+              <div className="h-px bg-gray-200 flex-1"></div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              disabled={loading}
+              className="w-full py-4 bg-white hover:bg-gray-50 text-sigceBlue font-black rounded-2xl text-base flex items-center justify-center gap-3 border border-gray-200 shadow-sm transition-all"
+            >
+              <User size={18} /> Login as Guest / Demo
             </button>
           </form>
 
