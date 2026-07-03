@@ -47,6 +47,11 @@ export default function EditNewsletter() {
   }, [id]);
 
   const handleUpdate = async () => {
+    const username = localStorage.getItem('username') || 'Admin';
+    if (username === 'Demo Guest') {
+      toast.error('Action disabled in Demo/Guest mode!');
+      return;
+    }
     try {
       setLoading(true);
       const token = localStorage.getItem('token');

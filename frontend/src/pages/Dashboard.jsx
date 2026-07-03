@@ -85,6 +85,11 @@ export default function Dashboard() {
   };
 
   const executeDelete = async () => {
+    if (username === 'Demo Guest') {
+      toast.error('Action disabled in Demo/Guest mode!');
+      setDeleteModalOpen(false);
+      return;
+    }
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`http://127.0.0.1:5000/api/newsletters/${newsletterToDelete.id}`, {
@@ -108,6 +113,11 @@ export default function Dashboard() {
 
   const executeShare = async (e) => {
     e.preventDefault();
+    if (username === 'Demo Guest') {
+      toast.error('Action disabled in Demo/Guest mode!');
+      setShareModalOpen(false);
+      return;
+    }
     if (!recipients.trim()) {
       toast.error('Recipient email(s) are required');
       return;

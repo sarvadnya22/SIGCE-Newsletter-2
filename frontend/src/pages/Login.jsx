@@ -31,8 +31,8 @@ export default function Login() {
     setError(null);
     try {
       const res = await axios.post('http://127.0.0.1:5000/api/auth/login', {
-        username: 'admin',
-        password: 'admin123'
+        username: 'guest',
+        password: 'guest123'
       });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('username', 'Demo Guest');

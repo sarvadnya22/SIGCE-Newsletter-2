@@ -65,8 +65,17 @@ const connectDB = async () => {
         await User.create({ username: 'admin', password: hashedPassword });
         console.log('Default admin user created: username: "admin", password: "admin123"');
       }
+      
+      const guestUser = await User.findOne({ where: { username: 'guest' } });
+      if (!guestUser) {
+        console.log('No default guest user found. Creating one...');
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('guest123', salt);
+        await User.create({ username: 'guest', password: hashedPassword });
+        console.log('Default guest user created: username: "guest", password: "guest123"');
+      }
     } catch (err) {
-      console.error('Error seeding default user:', err);
+      console.error('Error seeding default users:', err);
     }
   };
 
